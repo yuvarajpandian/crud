@@ -27,8 +27,8 @@ const schema = new mongoose.Schema({
   passwordConfirm: {
     type: String,
     required: [true, "please confirm your password"],
-    validate: {
-      validator: (el) => {
+     validate: {
+      validator: function (el) {
         return el === this.password;
       },
       message: "passwords are not the same!!",

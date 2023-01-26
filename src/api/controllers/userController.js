@@ -1,4 +1,4 @@
-const userModel = require("../models/userModel");
+
 const userService = require("../services/userService");
 const express = require("express");
 
@@ -14,9 +14,11 @@ router.post('/register', async (req, res, next) => {
       role: req.body.role,
     };
 
-    let response = userService.registerUser(payload);
+    let response = await userService.registerUser(payload);
+
     res.status(201).json({
-      message: "registerd sucessfully" , response
+      message: "registerd sucessfully" ,
+     response
     });
   } catch (error) {
     res.status(500).json({

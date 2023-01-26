@@ -1,14 +1,15 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const userRoutes = require('./api/routes/userRoutes');
 const app = express();
+const router = require('./api/routes/router')
 
 dotenv.config({ path: "./src/config/databaseConfig.env" });
 
-app.use(userRoutes);
+
 
 app.use(express.json({ limit: "50kb" }));
+app.use(router);
 
 mongoose.set("strictQuery", true);
 mongoose
