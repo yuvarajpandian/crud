@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const app = express();
 const router = require('./api/routes/router')
+const errorHandler = require('./api/controllers/errorController');
+
 
 dotenv.config({ path: "./src/config/databaseConfig.env" });
 
@@ -10,6 +12,7 @@ dotenv.config({ path: "./src/config/databaseConfig.env" });
 
 app.use(express.json({ limit: "50kb" }));
 app.use(router);
+app.use(errorHandler);
 
 mongoose.set("strictQuery", true);
 mongoose

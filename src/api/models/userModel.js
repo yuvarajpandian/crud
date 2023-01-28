@@ -16,6 +16,7 @@ const schema = new mongoose.Schema({
   role: {
     type: String,
     enum: ["seller", "buyer", "admin"],
+    required: [true, "please select role"]
   },
   password: {
     type: String,
@@ -33,6 +34,7 @@ const schema = new mongoose.Schema({
       },
       message: "passwords are not the same!!",
     },
+    select: false
   },
   createdAt: { type: Date, default: new Date(), select: false },
   updatedAt: { type: Date, default: new Date(), select: false },
