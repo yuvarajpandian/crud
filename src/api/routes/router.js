@@ -7,7 +7,7 @@ const router = express.Router();
 router.use(userRouter);
 router.all("*", (req, res, next) => {
   next(
-    new AppError(
+    new appError(
       `cannot find ${req.originalUrl} is not found in this server`,
       404
     )

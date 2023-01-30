@@ -62,6 +62,7 @@ router.delete("/user/delete/:id", async (req, res, next) => {
     res.status(500).json({
       stack: error.stack,
       message: error.message,
+      
     });
   }
 });
