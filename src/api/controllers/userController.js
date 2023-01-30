@@ -1,10 +1,12 @@
 const userService = require("../services/userService");
 const express = require("express");
-
 const router = express.Router();
+const catchAsync = require("../helpers/catchAsync");
+const AppError = require("../helpers/appError");
 
-router.post("/register", async (req, res, next) => {
-  try {
+router.post(
+  "/register",
+  catchAsync(async (req, res, next) => {
     let payload = {
       name: req.body.name,
       email: req.body.email,
@@ -19,14 +21,8 @@ router.post("/register", async (req, res, next) => {
       message: "registerd successfully",
       response,
     });
-  } catch (error) {
-    res.status(500).json({
-      stack: error.stack,
-      message: error.message,
-    });
-  }
-});
-
+  })
+);
 router.get("/allUsers", async (req, res, next) => {
   try {
     let allUserDetails = await userService.getUserList();
@@ -62,13 +58,13 @@ router.delete("/user/delete/:id", async (req, res, next) => {
     res.status(500).json({
       stack: error.stack,
       message: error.message,
-      
     });
   }
 });
 
-router.put("/user/update/:id", async (req, res, next) => {
-  try {
+router.put(
+  "/user/update/:id",
+  catchAsync(async (req, res, next) => {
     let payload = {};
     let id = req.params.id;
 
@@ -89,17 +85,10 @@ router.put("/user/update/:id", async (req, res, next) => {
             payload.password = req.body.password;
             payload.passwordConfirm = req.body.passwordConfirm;
           } else {
-            res.status(400).json({
-              message: "password is miss matching",
-            });
-
-            return;
+            return next(new AppError("password is miss matching", 404));
           }
         } else {
-          res.status(400).json({
-            message: " please enter confirm password",
-          });
-          return;
+          return next(new AppError("please enter confirm password", 400));
         }
       }
 
@@ -109,16 +98,9 @@ router.put("/user/update/:id", async (req, res, next) => {
         data: response,
       });
     } else {
-      res.status(400).json({
-        message: "data not found",
-      });
+      return next(new AppError("data not found", 404));
     }
-  } catch (error) {
-    res.status(500).json({
-      stack: error.stack,
-      message: error.message,
-    });
-  }
-});
+  })
+);
 
 module.exports = router;
