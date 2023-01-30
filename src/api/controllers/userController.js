@@ -26,10 +26,15 @@ router.post(
 router.get("/allUsers", async (req, res, next) => {
   try {
     let allUserDetails = await userService.getUserList();
-    res.status(201).json({
-      message: "successfully getted all user details",
-      data: allUserDetails,
-    });
+    if(allUserDetails.length){
+      res.status(201).json({
+        message: "successfully getted all user details",
+        data: allUserDetails,
+      });
+    }else{
+      next(new AppError("data not found" , 404));
+    }
+   
   } catch (error) {
     res.status(500).json({
       stack: error.stack,
@@ -43,7 +48,7 @@ router.delete("/user/delete/:id", async (req, res, next) => {
     let id = req.params.id;
 
     let deletedUserDetail = await userService.deleteUser(id);
-    if (deletedUserDetail) {
+    if (deletedUserDetail.length) {
       res.status(201).json({
         message: "sucessfully deleted",
         data: deletedUserDetail,
