@@ -1,7 +1,7 @@
 
 const dotenv = require("dotenv");
 const AppError = require("../helpers/appError")
-dotenv.config({ path:'../../config'});
+dotenv.config({ path:'../../config/nodeEnvironment.env'});
 const handleCastError = (err) => {
   const message = `invalid ${err.path}: ${err.value}`;
   return new AppError(message, 400);

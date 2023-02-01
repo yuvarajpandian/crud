@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 const app = express();
 const router = require('./api/routes/router')
 const errorHandler = require('./api/controllers/errorController');
-dotenv.config({ path: "./src/config/databaseConfig.env" });
+dotenv.config({ path: "./src/config/nodeEnvironment.env" });
 
 
 
