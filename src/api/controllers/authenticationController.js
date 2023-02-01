@@ -80,8 +80,8 @@ exports.login = catchAsync(async (req, res, next) => {
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
   const user = await authenticationService.findUserById(req.user.id);
+if(req.body.passwordCurrent){
 
-  console.log(req.body.passwordCurrent, user.password);
   const checkPassWord = await user.correctPassword(req.body.passwordCurrent, user.password)
   console.log(checkPassWord);
   if (!checkPassWord) {
@@ -93,6 +93,9 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   createSendToken(user, 200, res);
+}else{
+  return next(new AppError("please enter current password",404))
+}
 
 })
 
