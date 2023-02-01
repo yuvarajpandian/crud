@@ -39,7 +39,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   const decoded = await authenticationService.verifyToken(token);
-  
+
   const currentUser = await userModel.findById(decoded.id);
   if (!currentUser) {
     return next(
@@ -62,8 +62,13 @@ exports.login = catchAsync(async (req, res, next) => {
 
   if (userInfo) {
     if (userInfo.email) {
-      if (userInfo.password === password) {
+
+      const checkPassWord = await userInfo.correctPassword(password, userInfo.password);
+      if (checkPassWord) {
+
         createSendToken(userInfo, 200, res);
+
+
       } else {
         return next(new AppError("incorrect password", 404));
       }
@@ -73,21 +78,21 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.updatePassword = catchAsync(async(req,res,next) =>{
-    const user = await authenticationService.findUserById(req.user.id);
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  const user = await authenticationService.findUserById(req.user.id);
 
-     console.log(req.body.passwordCurrent, user.password);
-     const checkPassWord = await user.correctPassword(req.body.passwordCurrent,user.password)
-     console.log(checkPassWord);
-     if (!checkPassWord) {
-        return next( new AppError("Your current Password is wrong!", 401));
-      }
-    
-     user.password = req.body.password;
-     user.passwordConfirm = req.body.passwordConfirm;
-     await user.save();
-   
-     createSendToken(user, 200, res);
+  console.log(req.body.passwordCurrent, user.password);
+  const checkPassWord = await user.correctPassword(req.body.passwordCurrent, user.password)
+  console.log(checkPassWord);
+  if (!checkPassWord) {
+    return next(new AppError("Your current Password is wrong!", 401));
+  }
+
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save();
+
+  createSendToken(user, 200, res);
 
 })
 
