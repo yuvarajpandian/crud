@@ -1,6 +1,5 @@
 const userService = require("../services/userService");
 const express = require("express");
-
 const catchAsync = require("../helpers/catchAsync");
 const AppError = require("../helpers/appError");
 
@@ -44,8 +43,17 @@ exports.getAllUserDetails = async (req, res, next) => {
 exports.deleteSingleUser = async (req, res, next) => {
   try {
     let id = req.params.id;
+    let role = req.query.role;
+    let deletedUserDetail;
+    if(role == "buyer"){
+      deletedUserDetail = await userService.deleteBuyerUser(id);
+    }
+    if(role === "seller"){
+      deletedUserDetail = await userService.deleteSellerUser(id);
+    }
+  
 
-    let deletedUserDetail = await userService.deleteUser(id);
+  
     if (deletedUserDetail) {
       res.status(201).json({
         message: "sucessfully deleted",
@@ -67,9 +75,16 @@ exports.deleteSingleUser = async (req, res, next) => {
 
 exports.getSingleUserDetail = catchAsync(async (req, res, next) => {
   let id = req.params.id;
+  let role = req.query.role;
+  let fetchedData;
   if (id.length) {
-    let fetchedData = await userService.getSingleUserData(id);
-   
+
+   if(role === "buyer"){
+    fetchedData = await userService.getSingleBuyerData(id)
+   }
+   if(role === "seller"){
+    fetchedData = await userService.getSingleSellerData(id);
+   }
 
     if (fetchedData) {
       res.status(200).json({
@@ -77,12 +92,16 @@ exports.getSingleUserDetail = catchAsync(async (req, res, next) => {
         response: fetchedData,
       });
     }
+  }else{
+    return next(new AppError("no data found",404))
   }
 });
 
 exports.updateSingleUserDetails = catchAsync(async (req, res, next) => {
   let payload = {};
-  let id = req.params.id;
+  let id = req.user.id;
+  let role = req.user.role;
+  let response;
 
   if (req.body.name || req.body.email || req.body.role ) {
     if (req.body.name) {
@@ -97,7 +116,15 @@ exports.updateSingleUserDetails = catchAsync(async (req, res, next) => {
 
     payload.updatedAt = new Date();
 
-    let response = await userService.updateOne(id, payload);
+    if(role === "admin"){
+      response = userService.updateAdmin(id,payload)
+    }
+    if(role === "buyer"){
+      response = userService.updateBuyer(id,payload)
+    }
+    if(role === "seller"){
+      response = userService.updateSeller(id,payload)
+    }
     res.status(201).json({
       message: "succesfuly updated",
       data: response,
