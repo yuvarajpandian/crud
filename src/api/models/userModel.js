@@ -79,6 +79,8 @@ schema.methods.changePasswordAfter = function (JWTTimestamp) {
 
   return false;
 };
-const userModel = mongoose.model("users", schema);
+const adminModel = mongoose.model("admin", schema);
+const buyerModel = mongoose.model("buyer", schema);
+const sellerModel = mongoose.model("seller", schema);
 
-module.exports = userModel;
+module.exports = {adminModel,buyerModel,sellerModel};

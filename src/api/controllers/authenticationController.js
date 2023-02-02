@@ -1,9 +1,6 @@
-const express = require("express");
-const router = express.Router();
+
 const catchAsync = require("../helpers/catchAsync");
 const AppError = require("../helpers/appError");
-const userModel = require("../models/userModel");
-
 const dotenv = require("dotenv");
 dotenv.config({ path: "../../config/nodeEnvironment.env" });
 const authenticationService = require("../services/authenticationService");
@@ -25,6 +22,11 @@ const createSendToken = (user, statusCode, res) => {
 
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
+  let currentUser;
+  const role = req.headers.role;
+if(!(role === "admin"  || "buyer"  || "seller")){
+  return next(new AppError("provide valid role details" ,404));
+}
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("bearer")
@@ -37,28 +39,59 @@ exports.protect = catchAsync(async (req, res, next) => {
       new AppError("you are not logged in, please login to access", 401)
     );
   }
-
-  const decoded = await authenticationService.verifyToken(token);
-
-  const currentUser = await userModel.findById(decoded.id);
+const decoded = await authenticationService.verifyToken(token);
+   if(role ==="admin"){
+    currentUser = await authenticationService.findAdminById(decoded.id)
+   }
+   if(role ==="buyer")
+{
+  currentUser = await authenticationService.findBuyerById(decoded.id);
+}
+if(role==="seller")
+{
+  currentUser = await authenticationService.findSellerById(decoded.id);
+}   
   if (!currentUser) {
     return next(
       new AppError("the user belonging to the token no longer exists", 401)
     );
   }
+  if (currentUser.changePasswordAfter(decoded.iat)) {
+    return next(
+      new AppError("Password changed recently, please login again", 401)
+    );
+  }
+  currentUser.password = undefined;
+  currentUser.passwordChangedAt =undefined;
   req.user = currentUser;
   next();
 });
 
 exports.login = catchAsync(async (req, res, next) => {
+  const role = req.body.role;
   const email = req.body.email;
   const password = req.body.password;
+  let userInfo ;
+ if(!(role === "admin" || "buyer" || "seller")){
+  return next(new AppError("provide valid role to login",404));
+ }
 
   if (!email || !password) {
     return next(new AppError("please provie both email and password", 404));
   }
 
-  let userInfo = await authenticationService.getLoginUser(email);
+  if(role === "admin")
+  {
+    userInfo = await authenticationService.getLoginAdmin(email);
+  }
+  if(role === "buyer")
+  {
+    userInfo = await authenticationService.getLoginBuyer(email);
+  }
+  if(role === "seller")
+  {
+    userInfo = await authenticationService.getLoginSeller(email);
+  }
 
   if (userInfo) {
     if (userInfo.email) {
@@ -79,17 +112,32 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
-  const user = await authenticationService.findUserById(req.user.id);
+  const id  = req.user.id;
+  const role = req.user.role;
+  let userInfo;
+  if(!(role === "admin" || "buyer" || "seller"))
+  {
+    return next(new AppError("provide valid role to update password",404));
+  }
+  if(role ==="admin"){
+userInfo = await authenticationService.findAdminById(id)
+  }
+  if(role === "buyer"){
+    userInfo = await authenticationService.findBuyerById(id)
+  }
+  if(role === "seller"){
+    userInfo = await authenticationService.findSellerById(id)
+  }
 if(req.body.passwordCurrent){
 
-  const checkPassWord = await user.correctPassword(req.body.passwordCurrent, user.password)
+  const checkPassWord = await user.correctPassword(req.body.passwordCurrent, userInfo.password)
   console.log(checkPassWord);
   if (!checkPassWord) {
     return next(new AppError("Your current Password is wrong!", 401));
   }
 
-  user.password = req.body.password;
-  user.passwordConfirm = req.body.passwordConfirm;
+  userInfo.password = req.body.password;
+  userInfo.passwordConfirm = req.body.passwordConfirm;
   await user.save();
 
   createSendToken(user, 200, res);
