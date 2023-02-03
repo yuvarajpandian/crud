@@ -1,4 +1,3 @@
-
 const catchAsync = require("../helpers/catchAsync");
 const AppError = require("../helpers/appError");
 const dotenv = require("dotenv");
@@ -24,9 +23,9 @@ exports.protect = catchAsync(async (req, res, next) => {
   let token;
   let currentUser;
   const role = req.headers.role;
-if(!(role === "admin"  || "buyer"  || "seller")){
-  return next(new AppError("provide valid role details" ,404));
-}
+  if (!(role === "admin" || "buyer" || "seller")) {
+    return next(new AppError("provide valid role details", 404));
+  }
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("bearer")
@@ -39,18 +38,16 @@ if(!(role === "admin"  || "buyer"  || "seller")){
       new AppError("you are not logged in, please login to access", 401)
     );
   }
-const decoded = await authenticationService.verifyToken(token);
-   if(role ==="admin"){
-    currentUser = await authenticationService.findAdminById(decoded.id)
-   }
-   if(role ==="buyer")
-{
-  currentUser = await authenticationService.findBuyerById(decoded.id);
-}
-if(role==="seller")
-{
-  currentUser = await authenticationService.findSellerById(decoded.id);
-}   
+  const decoded = await authenticationService.verifyToken(token);
+  if (role === "admin") {
+    currentUser = await authenticationService.findAdminById(decoded.id);
+  }
+  if (role === "buyer") {
+    currentUser = await authenticationService.findBuyerById(decoded.id);
+  }
+  if (role === "seller") {
+    currentUser = await authenticationService.findSellerById(decoded.id);
+  }
   if (!currentUser) {
     return next(
       new AppError("the user belonging to the token no longer exists", 401)
@@ -62,7 +59,7 @@ if(role==="seller")
     );
   }
   currentUser.password = undefined;
-  currentUser.passwordChangedAt =undefined;
+  currentUser.passwordChangedAt = undefined;
   req.user = currentUser;
   next();
 });
@@ -71,37 +68,33 @@ exports.login = catchAsync(async (req, res, next) => {
   const role = req.body.role;
   const email = req.body.email;
   const password = req.body.password;
-  let userInfo ;
- if(!(role === "admin" || "buyer" || "seller")){
-  return next(new AppError("provide valid role to login",404));
- }
+  let userInfo;
+  if (!(role === "admin" || "buyer" || "seller")) {
+    return next(new AppError("provide valid role to login", 404));
+  }
 
   if (!email || !password) {
     return next(new AppError("please provie both email and password", 404));
   }
 
-  if(role === "admin")
-  {
+  if (role === "admin") {
     userInfo = await authenticationService.getLoginAdmin(email);
   }
-  if(role === "buyer")
-  {
+  if (role === "buyer") {
     userInfo = await authenticationService.getLoginBuyer(email);
   }
-  if(role === "seller")
-  {
+  if (role === "seller") {
     userInfo = await authenticationService.getLoginSeller(email);
   }
 
   if (userInfo) {
     if (userInfo.email) {
-
-      const checkPassWord = await userInfo.correctPassword(password, userInfo.password);
+      const checkPassWord = await userInfo.correctPassword(
+        password,
+        userInfo.password
+      );
       if (checkPassWord) {
-
         createSendToken(userInfo, 200, res);
-
-
       } else {
         return next(new AppError("incorrect password", 404));
       }
@@ -112,39 +105,37 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
-  const id  = req.user.id;
+  const id = req.user.id;
   const role = req.user.role;
   let userInfo;
-  if(!(role === "admin" || "buyer" || "seller"))
-  {
-    return next(new AppError("provide valid role to update password",404));
+  if (!(role === "admin" || "buyer" || "seller")) {
+    return next(new AppError("provide valid role to update password", 404));
   }
-  if(role ==="admin"){
-userInfo = await authenticationService.findAdminById(id)
+  if (role === "admin") {
+    userInfo = await authenticationService.findAdminById(id);
   }
-  if(role === "buyer"){
-    userInfo = await authenticationService.findBuyerById(id)
+  if (role === "buyer") {
+    userInfo = await authenticationService.findBuyerById(id);
   }
-  if(role === "seller"){
-    userInfo = await authenticationService.findSellerById(id)
+  if (role === "seller") {
+    userInfo = await authenticationService.findSellerById(id);
   }
-if(req.body.passwordCurrent){
+  if (req.body.passwordCurrent) {
+    const checkPassWord = await user.correctPassword(
+      req.body.passwordCurrent,
+      userInfo.password
+    );
+    console.log(checkPassWord);
+    if (!checkPassWord) {
+      return next(new AppError("Your current Password is wrong!", 401));
+    }
 
-  const checkPassWord = await user.correctPassword(req.body.passwordCurrent, userInfo.password)
-  console.log(checkPassWord);
-  if (!checkPassWord) {
-    return next(new AppError("Your current Password is wrong!", 401));
+    userInfo.password = req.body.password;
+    userInfo.passwordConfirm = req.body.passwordConfirm;
+    await userInfo.save();
+
+    createSendToken(user, 200, res);
+  } else {
+    return next(new AppError("please enter current password", 404));
   }
-
-  userInfo.password = req.body.password;
-  userInfo.passwordConfirm = req.body.passwordConfirm;
-  await user.save();
-
-  createSendToken(user, 200, res);
-}else{
-  return next(new AppError("please enter current password",404))
-}
-
-})
-
-
+});
