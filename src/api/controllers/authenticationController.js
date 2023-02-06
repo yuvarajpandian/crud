@@ -132,9 +132,10 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
     userInfo.password = req.body.password;
     userInfo.passwordConfirm = req.body.passwordConfirm;
+    userInfo.passwordChangedAt = new Date() - 1000;
     await userInfo.save();
 
-    createSendToken(user, 200, res);
+    createSendToken(req.user, 200, res);
   } else {
     return next(new AppError("please enter current password", 404));
   }
