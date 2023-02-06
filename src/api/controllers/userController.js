@@ -2,6 +2,8 @@ const userService = require("../services/userService");
 const express = require("express");
 const catchAsync = require("../helpers/catchAsync");
 const AppError = require("../helpers/appError");
+const ApiFeature = require("../helpers/apiFeatures");
+const { buyerModel,adminModel,sellerModel } = require("../models/userModel");
 
 exports.signIn = catchAsync(async (req, res, next) => {
   let payload = {
@@ -23,7 +25,7 @@ exports.signIn = catchAsync(async (req, res, next) => {
 exports.getAllUserDetails = async (req, res, next) => {
 
   try {
-    let allUserDetails = await userService.getUserList();
+    let allUserDetails = await userService.getUserList(req.query);
     if (allUserDetails.length) {
       res.status(201).json({
         message: "successfully getted all user details",
@@ -39,6 +41,30 @@ exports.getAllUserDetails = async (req, res, next) => {
     });
   }
 };
+// exports.getAllUserDetails = async (req, res, next) => {
+
+//   try {
+//     let features = new ApiFeature(buyerModel.find(),req.query).filter().sort()
+    
+  
+// allUserDetails = await features.query;
+
+
+//     if (allUserDetails.length) {
+//       res.status(201).json({
+//         message: "successfully getted all user details",
+//         data: allUserDetails,
+//       });
+//     } else {
+//       return next(new AppError("data not found", 404));
+//     }
+//   } catch (error) {
+//     res.status(500).json({
+//       stack: error.stack,
+//       message: error.message,
+//     });
+//   }
+// };
 
 exports.deleteSingleUser = async (req, res, next) => {
   try {
