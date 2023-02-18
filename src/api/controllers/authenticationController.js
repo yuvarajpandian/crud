@@ -4,20 +4,25 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "../../config/nodeEnvironment.env" });
 const authenticationService = require("../services/authenticationService");
 
-const createSendToken = (user, statusCode, res) => {
-  const token = authenticationService.signInToken(user._id);
-
+const createSendToken =  async (user, statusCode, res ) => {
+  const accessToken = authenticationService.signInToken(user._id);
+  const refreshToken = authenticationService.createSendRefreshToken(user._id);
   // removing the pass from the output
   user.password = undefined;
-
+  // user.refreshToken = refreshToken;
+  await authenticationService.findByAdminIdUpdate(user._id,refreshToken)
+  
+  console.log(user);
   res.status(statusCode).json({
     status: "successfully login",
-    token,
+    accessToken,
+    refreshToken,
     data: {
       user: user,
     },
   });
 };
+
 
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
@@ -94,6 +99,7 @@ exports.login = catchAsync(async (req, res, next) => {
         userInfo.password
       );
       if (checkPassWord) {
+        console.log(userInfo,"....");
         createSendToken(userInfo, 200, res);
       } else {
         return next(new AppError("incorrect password", 404));
@@ -135,7 +141,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     userInfo.passwordChangedAt = new Date() - 1000;
     await userInfo.save();
 
-    createSendToken(req.user, 200, res);
+    createSendToken(req.user, 200, res );
   } else {
     return next(new AppError("please enter current password", 404));
   }

@@ -21,6 +21,14 @@ exports.signInToken = (id) => {
   });
 };
 
+
+exports.createSendRefreshToken  = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn:process.env.JWT_REFRESH_EXPIRES_IN
+  });
+};
+
+
 exports.verifyToken = async (token) => {
   return await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 }
@@ -44,6 +52,10 @@ exports.findSellerById = async (id) => {
 // exports.findSellerPasswordChangeAtById = async (id) => {
 //   return await sellerModel.findById(id).select("+passwordChangedAt");
 // }
+exports.findByAdminIdUpdate = async (id,refreshToken) =>
+{
+  return await adminModel.findByIdAndUpdate(id,{refreshToken:refreshToken}, { new: true })
+}
 
 
 

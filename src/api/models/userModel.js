@@ -39,7 +39,8 @@ const schema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: new Date(), select: false },
   updatedAt: { type: Date, default: new Date(), select: false },
-  passwordChangedAt: { type: Date, default: null, select: false },
+  passwordChangedAt: { type: Date, default: "", select: false },
+  refreshToken:{type:String,default: null}
 });
 
 schema.pre("save", async function (next) {

@@ -2,11 +2,16 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const app = express();
+const cors = require('cors');
 const router = require('./api/routes/router')
 const errorHandler = require('./api/controllers/errorController');
 dotenv.config({ path: "./src/config/nodeEnvironment.env" });
 
 
+app.use(cors({
+  origin: '*',
+  credentials: true
+}));
 
 app.use(express.json({ limit: "50kb" }));
 app.use(router);
