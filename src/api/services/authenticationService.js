@@ -52,10 +52,13 @@ exports.findSellerById = async (id) => {
 // exports.findSellerPasswordChangeAtById = async (id) => {
 //   return await sellerModel.findById(id).select("+passwordChangedAt");
 // }
-exports.findByAdminIdUpdate = async (id,refreshToken) =>
-{
-  return await adminModel.findByIdAndUpdate(id,{refreshToken:refreshToken}, { new: true })
+exports.findByAdminIdUpdate = async (id,Token) =>
+{ 
+  return await adminModel.findByIdAndUpdate(id,{refreshToken:Token})
 }
 
 
+exports.findAdminByIdAndToken = async(id,refreshToken) =>{
+return await adminModel.findOne({_id:id, refreshToken:refreshToken});
+}
 

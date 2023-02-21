@@ -62,7 +62,7 @@ console.log(err.message,"check");
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
     let error = err;
-   
+   console.log(error.name,"errorname");
     if (error.name === "CastError") {
       error = handleCastError(error);
     }
@@ -78,7 +78,7 @@ console.log(err.message,"check");
     }
 
     if (error.name === "TokenExpiredError") {
-      error === handleTokenExpiredError()
+      error = handleTokenExpiredError()
     }
     sendErrorProd(error, res);
   }

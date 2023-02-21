@@ -5,5 +5,5 @@ const authRoute = express.Router();
 
 authRoute.route('/login').post(authenticationController.login)
 authRoute.route('/user/update-password').patch(authenticationController.protect,authenticationController.updatePassword)
-
+authRoute.route('/authentication').post(authenticationController.refreshToken)
 module.exports = authRoute;
